@@ -1,0 +1,55 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/aprovati}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+
+  servlet:
+    multipart:
+      max-file-size: 25MB
+      max-request-size: 25MB
+
+server:
+  error:
+    include-message: always
+
+app:
+  import:
+    provider: ${APP_IMPORT_PROVIDER:rule-based}
+  cors:
+    allowed-origins: ${APP_CORS_ALLOWED_ORIGINS:http://localhost:5173,http://127.0.0.1:5173,http://localhost:4173,http://127.0.0.1:4173}
+  admin:
+    bootstrap-enabled: ${APP_ADMIN_BOOTSTRAP_ENABLED:false}
+    email: ${APP_ADMIN_EMAIL:}
+    name: ${APP_ADMIN_NAME:}
+    password: ${APP_ADMIN_PASSWORD:}
+  jwt:
+    secret: ${APP_JWT_SECRET:}
+    expiration-seconds: 7200
+  openai:
+    api-key: ${OPENAI_API_KEY:}
+    model: gpt-4.1-mini
+  billing:
+    enabled: ${APP_BILLING_ENABLED:false}
+    success-url: ${APP_BILLING_SUCCESS_URL:http://localhost:5173/app/minha-assinatura?checkout=success}
+    cancel-url: ${APP_BILLING_CANCEL_URL:http://localhost:5173/app/minha-assinatura?checkout=cancel}
+    portal-return-url: ${APP_BILLING_PORTAL_RETURN_URL:http://localhost:5173/app/minha-assinatura}
+    trial-days: ${APP_BILLING_TRIAL_DAYS:7}
+    stripe:
+      secret-key: ${STRIPE_SECRET_KEY:}
+      webhook-secret: ${STRIPE_WEBHOOK_SECRET:}
+      prices:
+        essencial: ${STRIPE_PRICE_ESSENCIAL:}
+        essencial-anual: ${STRIPE_PRICE_ESSENCIAL_ANUAL:}
+        pro: ${STRIPE_PRICE_PRO:}
+        pro-anual: ${STRIPE_PRICE_PRO_ANUAL:}
+        premium: ${STRIPE_PRICE_PREMIUM:}
+        premium-anual: ${STRIPE_PRICE_PREMIUM_ANUAL:}
+  retention:
+    audit-days: ${APP_RETENTION_AUDIT_DAYS:90}
