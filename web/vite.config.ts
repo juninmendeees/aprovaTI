@@ -18,4 +18,8 @@ export default defineConfig({
       "/politicas": { target: "http://localhost:8080", changeOrigin: true },
     },
   },
+  preview: {
+    // Railway forwards requests with the public app host; allow it in preview mode.
+    allowedHosts: [".up.railway.app"],
+  },
 });
