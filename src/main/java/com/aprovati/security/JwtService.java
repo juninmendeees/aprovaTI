@@ -9,6 +9,9 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.Instant;
 import java.util.Date;
 import java.util.HashMap;
@@ -78,11 +81,33 @@ public class JwtService {
         if (!StringUtils.hasText(jwtSecret)) {
             throw new IllegalStateException("APP_JWT_SECRET não configurada");
         }
-        byte[] decoded = Decoders.BASE64.decode(jwtSecret);
-        if (decoded.length < 32) {
-            throw new IllegalStateException("APP_JWT_SECRET deve ter ao menos 32 bytes em base64");
+        String trimmed = jwtSecret.trim();
+        byte[] keyBytes = tryDecodeBase64JwtSecret(trimmed);
+        if (keyBytes == null) {
+            keyBytes = sha256(trimmed);
         }
-        signingKey = Keys.hmacShaKeyFor(decoded);
+        signingKey = Keys.hmacShaKeyFor(keyBytes);
         return signingKey;
+    }
+
+    /**
+     * Aceita o formato recomendado: Base64 (ex.: {@code openssl rand -base64 48}) com ≥32 bytes após decode.
+     * Se não for Base64 válido ou for curto demais, retorna null e o chamador deriva chave via SHA-256 do texto.
+     */
+    private byte[] tryDecodeBase64JwtSecret(String value) {
+        try {
+            byte[] decoded = Decoders.BASE64.decode(value.replaceAll("\\s", ""));
+            return decoded.length >= 32 ? decoded : null;
+        } catch (RuntimeException ignored) {
+            return null;
+        }
+    }
+
+    private static byte[] sha256(String value) {
+        try {
+            return MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8));
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 não disponível", e);
+        }
     }
 }
