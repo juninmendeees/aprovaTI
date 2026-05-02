@@ -22,8 +22,8 @@ export default defineConfig({
     // Railway forwards requests with the public app host; allow it in preview mode.
     allowedHosts: [
       ".up.railway.app",
-      "aprovaticoncurosos.com.br",
-      "www.aprovaticoncurosos.com.br",
+      "aprovaticoncursos.com.br",
+      "www.aprovaticoncursos.com.br",
     ],
   },
 });
