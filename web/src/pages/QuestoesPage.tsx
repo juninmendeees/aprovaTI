@@ -1,6 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { enviarResposta, fetchQuestaoFiltroOpcoes, fetchQuestoes } from "../api/client";
+import {
+  enviarResposta,
+  fetchQuestaoEnunciadoImagemBlob,
+  fetchQuestaoFiltroOpcoes,
+  fetchQuestoes,
+} from "../api/client";
 import { EnunciadoFormatado } from "../components/EnunciadoFormatado";
 import type { QuestaoResponseDTO, RespostaResponseDTO } from "../types";
 
@@ -44,6 +49,8 @@ export function QuestoesPage() {
   const [error, setError] = useState<string | null>(null);
   const [ultima, setUltima] = useState<RespostaResponseDTO | null>(null);
   const [enviando, setEnviando] = useState(false);
+  const [enunciadoImagemObjectUrl, setEnunciadoImagemObjectUrl] = useState<string | null>(null);
+  const enunciadoImagemBlobRef = useRef<string | null>(null);
 
   const atual = lista[idx] ?? null;
 
@@ -65,6 +72,39 @@ export function QuestoesPage() {
     }
     void carregarOpcoes();
   }, [token]);
+
+  useEffect(() => {
+    if (enunciadoImagemBlobRef.current) {
+      URL.revokeObjectURL(enunciadoImagemBlobRef.current);
+      enunciadoImagemBlobRef.current = null;
+    }
+    setEnunciadoImagemObjectUrl(null);
+
+    if (!token || !atual?.temImagemEnunciado || !atual.id) {
+      return;
+    }
+
+    let cancelled = false;
+    void (async () => {
+      try {
+        const blob = await fetchQuestaoEnunciadoImagemBlob(atual.id, token);
+        if (cancelled) return;
+        const url = URL.createObjectURL(blob);
+        enunciadoImagemBlobRef.current = url;
+        setEnunciadoImagemObjectUrl(url);
+      } catch {
+        if (!cancelled) setEnunciadoImagemObjectUrl(null);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      if (enunciadoImagemBlobRef.current) {
+        URL.revokeObjectURL(enunciadoImagemBlobRef.current);
+        enunciadoImagemBlobRef.current = null;
+      }
+    };
+  }, [token, atual?.id, atual?.temImagemEnunciado]);
 
   async function pesquisarQuestoes() {
     if (!auth || !token) return;
@@ -318,6 +358,15 @@ export function QuestoesPage() {
 
           <article className="rounded-2xl border border-slate-800/80 bg-ink-900/60 p-6">
             <EnunciadoFormatado texto={atual.enunciado} />
+            {enunciadoImagemObjectUrl ? (
+              <div className="mt-5 flex justify-center rounded-lg border border-slate-800/80 bg-ink-950/50 p-3">
+                <img
+                  src={enunciadoImagemObjectUrl}
+                  alt="Figura do enunciado"
+                  className="max-h-[min(70vh,520px)] max-w-full object-contain"
+                />
+              </div>
+            ) : null}
             <div className="mt-6 space-y-2">
               {atual.alternativas?.map((alt) => (
                 <button

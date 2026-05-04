@@ -42,7 +42,8 @@ public class AdminQuestaoController {
         try {
             Questao saved = questaoImportService.salvarQuestaoManual(
                     request.getQuestao(),
-                    request.isConfirmarDuplicada()
+                    request.isConfirmarDuplicada(),
+                    request.getImagemEnunciadoBase64()
             );
             auditService.log(
                     "ADMIN_MANUAL_CREATE",
@@ -61,6 +62,15 @@ public class AdminQuestaoController {
                     ex.getMessage()
             );
             return ResponseEntity.status(409).body(Map.of(
+                    "mensagem", ex.getMessage()
+            ));
+        } catch (IllegalStateException ex) {
+            auditService.log(
+                    "ADMIN_MANUAL_CREATE_REJECTED",
+                    "QUESTAO",
+                    "Imagem: " + ex.getMessage()
+            );
+            return ResponseEntity.status(400).body(Map.of(
                     "mensagem", ex.getMessage()
             ));
         }

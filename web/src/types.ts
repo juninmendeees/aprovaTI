@@ -37,6 +37,8 @@ export type QuestaoResponseDTO = {
   assunto: string;
   cargoFuncao?: string;
   gabarito: string;
+  /** Presente quando a questão foi cadastrada manualmente com imagem no enunciado. */
+  temImagemEnunciado?: boolean;
   alternativas: AlternativaDTO[];
 };
 

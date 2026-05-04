@@ -5,6 +5,7 @@ import com.aprovati.entity.Alternativa;
 import com.aprovati.entity.Disciplina;
 import com.aprovati.entity.Questao;
 import com.aprovati.repository.QuestaoRepository;
+import com.aprovati.service.QuestaoEnunciadoImagemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,7 @@ public class QuestaoImportService {
     private final DisciplinaMappingService disciplinaMappingService;
     private final QuestaoRepository questaoRepository;
     private final QuestaoDuplicateService questaoDuplicateService;
+    private final QuestaoEnunciadoImagemService questaoEnunciadoImagemService;
 
     @Value("${app.import.provider:rule-based}")
     private String importProvider;
@@ -134,7 +136,7 @@ public class QuestaoImportService {
                 .orElseGet(() -> new DuplicateCheckResult(false, null, null));
     }
 
-    public Questao salvarQuestaoManual(ImportedQuestaoDTO questao, boolean confirmarDuplicada) {
+    public Questao salvarQuestaoManual(ImportedQuestaoDTO questao, boolean confirmarDuplicada, String imagemEnunciadoBase64) {
         ImportedQuestaoDTO item = questao == null ? new ImportedQuestaoDTO() : questao;
         normalizeExtracted(List.of(item), item.getBanca(), item.getAno(), item.getFonteProva());
 
@@ -146,7 +148,16 @@ public class QuestaoImportService {
         }
 
         Questao entity = mapToEntity(item, item.getBanca(), item.getAno(), item.getFonteProva());
-        return questaoRepository.save(entity);
+        Questao saved = questaoRepository.save(entity);
+        try {
+            if (imagemEnunciadoBase64 != null && !imagemEnunciadoBase64.isBlank()) {
+                questaoEnunciadoImagemService.attachBase64IfPresent(saved, imagemEnunciadoBase64);
+            }
+        } catch (IllegalStateException ex) {
+            questaoRepository.deleteById(saved.getId());
+            throw ex;
+        }
+        return questaoRepository.findById(saved.getId()).orElse(saved);
     }
 
     private void markDuplicadas(List<ImportedQuestaoDTO> extracted) {

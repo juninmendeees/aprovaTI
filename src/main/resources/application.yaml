@@ -20,6 +20,8 @@ server:
     include-message: always
 
 app:
+  questoes:
+    enunciado-imagem-dir: ${APP_QUESTOES_ENUNCIADO_IMAGEM_DIR:./data/questoes-enunciado-imagens}
   import:
     provider: ${APP_IMPORT_PROVIDER:rule-based}
   cors:

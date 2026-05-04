@@ -230,15 +230,30 @@ export async function validarDuplicidadeQuestaoAdmin(
   return parseJson<DuplicateCheckResponse>(res);
 }
 
+export function urlQuestaoEnunciadoImagem(questaoId: number): string {
+  return withBase(`/questoes/${questaoId}/enunciado-imagem`);
+}
+
+export async function fetchQuestaoEnunciadoImagemBlob(questaoId: number, token: string): Promise<Blob> {
+  const res = await fetch(urlQuestaoEnunciadoImagem(questaoId), { headers: authHeader(token) });
+  await ensureOk(res);
+  return res.blob();
+}
+
 export async function criarQuestaoManualAdmin(
   token: string,
   questao: ImportedQuestaoDTO,
-  confirmarDuplicada = false
+  confirmarDuplicada = false,
+  imagemEnunciadoBase64?: string | null
 ): Promise<{ id: number; mensagem: string }> {
   const res = await fetch(withBase("/admin/questoes/manual"), {
     method: "POST",
     headers: { "Content-Type": "application/json", ...(authHeader(token) as Record<string, string>) },
-    body: JSON.stringify({ questao, confirmarDuplicada }),
+    body: JSON.stringify({
+      questao,
+      confirmarDuplicada,
+      ...(imagemEnunciadoBase64 ? { imagemEnunciadoBase64 } : {}),
+    }),
   });
   await ensureOk(res);
   return parseJson<{ id: number; mensagem: string }>(res);

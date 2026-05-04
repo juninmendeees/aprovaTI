@@ -18,5 +18,8 @@ public class QuestaoResponseDTO {
     private String cargoFuncao;
     private String gabarito;
 
+    /** Indica se existe imagem do enunciado (cadastro manual). */
+    private boolean temImagemEnunciado;
+
     private List<AlternativaDTO> alternativas;
 }

@@ -36,6 +36,10 @@ public class Questao {
 
     private String fonteProva;
 
+    /** Extensão do arquivo de imagem do enunciado (ex.: png), apenas para questões cadastradas manualmente com imagem. */
+    @Column(name = "enunciado_imagem_ext", length = 8)
+    private String enunciadoImagemExt;
+
     @OneToMany(mappedBy = "questao", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Alternativa> alternativas;
 }

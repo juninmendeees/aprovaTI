@@ -43,6 +43,9 @@ public class QuestaoMapper {
                 .assunto(questao.getAssunto())
                 .cargoFuncao(questao.getCargoFuncao())
                 .gabarito(questao.getGabarito())
+                .temImagemEnunciado(
+                        questao.getEnunciadoImagemExt() != null && !questao.getEnunciadoImagemExt().isBlank()
+                )
                 .alternativas(
                         questao.getAlternativas().stream().map(a -> {
                             AlternativaDTO dto = new AlternativaDTO();

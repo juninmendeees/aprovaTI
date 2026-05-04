@@ -2,6 +2,7 @@ package com.aprovati.controller;
 
 import com.aprovati.dto.*;
 import com.aprovati.security.AuthenticatedUserService;
+import com.aprovati.service.QuestaoEnunciadoImagemService;
 import com.aprovati.service.QuestaoService;
 
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,7 @@ import java.util.List;
 public class QuestaoController {
 
     private final QuestaoService service;
+    private final QuestaoEnunciadoImagemService questaoEnunciadoImagemService;
     private final AuthenticatedUserService authenticatedUserService;
 
     @PostMapping
@@ -31,6 +33,15 @@ public class QuestaoController {
     @GetMapping("/filtros/opcoes")
     public ResponseEntity<QuestaoFiltroOpcoesDTO> listarOpcoesFiltro() {
         return ResponseEntity.ok(service.listarOpcoesFiltro());
+    }
+
+    @GetMapping("/{id}/enunciado-imagem")
+    public ResponseEntity<byte[]> enunciadoImagem(@PathVariable Long id) {
+        return questaoEnunciadoImagemService.load(id)
+                .map(img -> ResponseEntity.ok()
+                        .contentType(img.mediaType())
+                        .body(img.bytes()))
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @DeleteMapping("/{id}")

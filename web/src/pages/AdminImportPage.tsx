@@ -65,6 +65,8 @@ export function AdminImportPage() {
   const [summary, setSummary] = useState<ImportSummaryResponse | null>(null);
 
   const [manual, setManual] = useState<ManualForm>(manualInitial);
+  /** Data URL (opcional) — só cadastro manual; não usado na importação CSV/PDF. */
+  const [manualImagemDataUrl, setManualImagemDataUrl] = useState<string | null>(null);
   const [manualStatus, setManualStatus] = useState<string | null>(null);
 
   const orderedSummary = useMemo(() => {
@@ -207,9 +209,15 @@ export function AdminImportPage() {
         }
       }
 
-      const result = await criarQuestaoManualAdmin(token, questao, confirmarDuplicada);
+      const result = await criarQuestaoManualAdmin(
+        token,
+        questao,
+        confirmarDuplicada,
+        manualImagemDataUrl ?? undefined
+      );
       setManualStatus(`${result.mensagem} ID ${result.id}.`);
       setManual(manualInitial);
+      setManualImagemDataUrl(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Falha ao cadastrar questão manualmente");
     } finally {
@@ -280,6 +288,49 @@ export function AdminImportPage() {
             placeholder="Enunciado"
             className="w-full rounded-lg border border-slate-700 bg-ink-950 px-3 py-2 text-slate-100"
           />
+
+          <div className="rounded-lg border border-slate-700/80 bg-ink-950/40 p-4">
+            <label className="text-xs font-medium uppercase tracking-wide text-slate-500">
+              Imagem do enunciado (opcional)
+            </label>
+            <p className="mt-1 text-xs text-slate-500">
+              PNG, JPEG, GIF ou WebP até 2 MB. Exibida abaixo do enunciado na prática de questões.
+            </p>
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/gif,image/webp"
+              className="mt-2 block w-full text-sm text-slate-300 file:mr-3 file:rounded-md file:border-0 file:bg-sea-600 file:px-3 file:py-1.5 file:text-sm file:font-medium file:text-ink-950 hover:file:bg-sea-500"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file) {
+                  setManualImagemDataUrl(null);
+                  return;
+                }
+                const reader = new FileReader();
+                reader.onload = () => {
+                  const r = reader.result;
+                  setManualImagemDataUrl(typeof r === "string" ? r : null);
+                };
+                reader.readAsDataURL(file);
+              }}
+            />
+            {manualImagemDataUrl ? (
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <img
+                  src={manualImagemDataUrl}
+                  alt="Pré-visualização"
+                  className="max-h-40 max-w-full rounded border border-slate-700 object-contain"
+                />
+                <button
+                  type="button"
+                  onClick={() => setManualImagemDataUrl(null)}
+                  className="rounded-lg border border-slate-600 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-800"
+                >
+                  Remover imagem
+                </button>
+              </div>
+            ) : null}
+          </div>
 
           <div className="grid gap-3 sm:grid-cols-3">
             <input required value={manual.disciplina} onChange={(e) => setManual((p) => ({ ...p, disciplina: e.target.value }))} placeholder="Disciplina (enum)" className="rounded border border-slate-700 bg-ink-950 px-3 py-2 text-slate-100" />

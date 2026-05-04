@@ -23,6 +23,7 @@ public class QuestaoService {
 
     private final QuestaoRepository repository;
     private final RespostaUsuarioRepository respostaRepository;
+    private final QuestaoEnunciadoImagemService questaoEnunciadoImagemService;
 
     public QuestaoResponseDTO criar(QuestaoRequestDTO dto) {
 
@@ -50,6 +51,7 @@ public class QuestaoService {
     }
 
     public void deletar(Long id) {
+        questaoEnunciadoImagemService.deleteIfExists(id);
         repository.deleteById(id);
     }
 

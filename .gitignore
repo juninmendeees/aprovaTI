@@ -40,3 +40,6 @@ web/.env
 
 ### Apostilas (arquivos enviados localmente — não versionar) ###
 data/apostilas/
+
+### Imagens de enunciado (cadastro manual) ###
+data/questoes-enunciado-imagens/
